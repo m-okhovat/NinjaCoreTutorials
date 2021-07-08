@@ -9,4 +9,9 @@ namespace NinjaConsole
             Console.WriteLine("Hello World!");
         }
     }
+
+
+
+
+
 }

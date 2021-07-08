@@ -12,7 +12,8 @@ using System.Threading.Tasks;
 
 namespace NinjaAspNetCore
 {
-    public class Startup
+
+    public class Startup 
     {
         public Startup(IConfiguration configuration)
         {
