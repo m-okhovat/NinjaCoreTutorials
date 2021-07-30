@@ -6,16 +6,43 @@ namespace NinjaConsole
     {
         static void Main(string[] args)
         {
-            var firstChain = new FirstChain();
-            var secondChain = new SecondChain();
-            var thirdChain = new ThirdChain();
+            var applicationBuilder = new ApplicationBuilder();
 
-            firstChain.SetNext(secondChain);
-            secondChain.SetNext(thirdChain);
+            var pipeline = applicationBuilder
+                 .Use(FirstMiddlewareWrapper)
+                 .Use(SecondMiddlewareWrapper)
+                 .Build();
 
-            firstChain.Handle("Hello Milad ... ");
+            pipeline("Milad");
 
             Console.Read();
+
+        }
+
+        private static RequestDelegate FirstMiddlewareWrapper(RequestDelegate next)
+        {
+            RequestDelegate result = context =>
+            {
+                var helloFromFirst = context + " Hello From first =>";
+                Console.Write(helloFromFirst);
+                next(helloFromFirst);
+            };
+
+            return result;
+
+        }
+
+        private static RequestDelegate SecondMiddlewareWrapper(RequestDelegate next)
+        {
+            RequestDelegate result = context =>
+            {
+                var helloFromSecond = context + " Hello From second =>";
+                Console.Write(helloFromSecond);
+                next(helloFromSecond);
+            };
+
+            return result;
+
         }
     }
 
