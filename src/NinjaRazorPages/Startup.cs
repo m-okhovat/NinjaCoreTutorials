@@ -1,12 +1,10 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
 
 namespace NinjaRazorPages
@@ -23,6 +21,7 @@ namespace NinjaRazorPages
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddSingleton<CustomMiddleware>();
             services.AddRazorPages();
         }
 
@@ -41,16 +40,84 @@ namespace NinjaRazorPages
             }
 
             app.UseHttpsRedirection();
+
             app.UseStaticFiles();
 
+            app.Use(async (context, next) =>
+            {
+                var isUncleBranch = context.Request.Path.StartsWithSegments("/Amoo");
+                if (isUncleBranch)
+                {
+                    await context.Response.WriteAsync("Farar!!!!");
+                }
+
+                else
+                {
+                    await next();
+                }
+
+            });
+
             app.UseRouting();
+
+            app.Map("/ping", builder =>
+            {
+                builder.Run(async context => await context.Response.WriteAsync("Pong"));
+
+            });
+
+            app.UseMiddleware<CustomMiddleware>();
+            app.UseMiddleware<JohnMiddleware>();
+            // app.Run(async context => await context.Response
+            //                         .WriteAsync("hello I am from Run method in application builder =>"));
 
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
+                endpoints.Map("/test", async context =>
+                   await context.Response.WriteAsync("this is test"));
+
                 endpoints.MapRazorPages();
             });
+        }
+    }
+
+    public class CustomMiddleware : IMiddleware
+    {
+        public async Task InvokeAsync(HttpContext context, RequestDelegate next)
+        {
+
+            var isUncleBranch = context.Request.Path.StartsWithSegments("/Uncle");
+            if (isUncleBranch)
+            {
+                await context.Response.WriteAsync("bad gheleghi nakon amoo he!");
+            }
+
+            else
+            {
+                await next(context);
+            }
+        }
+    }
+
+    public class JohnMiddleware
+    {
+        private readonly RequestDelegate _next;
+
+        public JohnMiddleware(RequestDelegate next)
+        {
+            _next = next;
+        }
+        public async Task InvokeAsync(HttpContext context, ILogger<JohnMiddleware> logger)
+        {
+            var isUncleBranch = context.Request.Path.StartsWithSegments("/John");
+            if (isUncleBranch)
+            {
+                await context.Response.WriteAsync("Salammm amooo!");
+            }
+
+            logger.LogInformation("salam");
         }
     }
 }
