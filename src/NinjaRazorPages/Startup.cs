@@ -4,8 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using System.Threading.Tasks;
+using System;
 
 namespace NinjaRazorPages
 {
@@ -21,6 +20,29 @@ namespace NinjaRazorPages
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+
+            // var orderServiceDescriptor =  new ServiceDescriptor(typeof(IOrderService), typeof(OrderService), ServiceLifetime.Scoped);
+            // services.Add(orderServiceDescriptor);
+
+
+            services.AddSingleton<Settings>();
+            services.AddSingleton<IIdGenerator, IdGenerator>();
+            services.AddSingleton<IOrderService>(provider =>
+            {
+                var id = string.Empty;
+                var settings = provider.GetService<Settings>();
+                if (settings.IsProduction)
+                    id = $"production{Guid.NewGuid()}";
+                else
+                {
+                    id = $"test{Guid.NewGuid()}";
+
+                }
+
+                return new OrderService(id);
+
+            });
+
             services.AddSingleton<CustomMiddleware>();
             services.AddRazorPages();
         }
@@ -82,42 +104,46 @@ namespace NinjaRazorPages
             });
         }
     }
+}
 
-    public class CustomMiddleware : IMiddleware
+
+public interface IOrderService
+{
+    public void RegisterOrder();
+
+}
+
+class OrderService : IOrderService
+{
+    private string _id;
+    public OrderService(string id)
     {
-        public async Task InvokeAsync(HttpContext context, RequestDelegate next)
-        {
-
-            var isUncleBranch = context.Request.Path.StartsWithSegments("/Uncle");
-            if (isUncleBranch)
-            {
-                await context.Response.WriteAsync("bad gheleghi nakon amoo he!");
-            }
-
-            else
-            {
-                await next(context);
-            }
-        }
+        _id = id;
     }
-
-    public class JohnMiddleware
+    public void RegisterOrder()
     {
-        private readonly RequestDelegate _next;
-
-        public JohnMiddleware(RequestDelegate next)
-        {
-            _next = next;
-        }
-        public async Task InvokeAsync(HttpContext context, ILogger<JohnMiddleware> logger)
-        {
-            var isUncleBranch = context.Request.Path.StartsWithSegments("/John");
-            if (isUncleBranch)
-            {
-                await context.Response.WriteAsync("Salammm amooo!");
-            }
-
-            logger.LogInformation("salam");
-        }
+        // todo : register order ....
     }
 }
+
+public interface IIdGenerator
+{
+    Guid Create();
+}
+
+class IdGenerator : IIdGenerator
+{
+    public Guid Create()
+    {
+        //... 
+        return Guid.NewGuid();
+    }
+}
+
+public class Settings
+{
+    public bool IsProduction => true;
+    //...
+}
+
+
