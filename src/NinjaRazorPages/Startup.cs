@@ -27,7 +27,7 @@ namespace NinjaRazorPages
 
             services.AddSingleton<Settings>();
             services.AddSingleton<IIdGenerator, IdGenerator>();
-            services.AddSingleton<IOrderService>(provider =>
+            services.AddScoped<IOrderService>(provider =>
             {
                 var id = string.Empty;
                 var settings = provider.GetService<Settings>();
@@ -104,46 +104,24 @@ namespace NinjaRazorPages
             });
         }
     }
-}
 
 
-public interface IOrderService
-{
-    public void RegisterOrder();
-
-}
-
-class OrderService : IOrderService
-{
-    private string _id;
-    public OrderService(string id)
+    public class ScopeService : IDisposable
     {
-        _id = id;
-    }
-    public void RegisterOrder()
-    {
-        // todo : register order ....
-    }
-}
+        public IServiceProvider Provider { get; }
 
-public interface IIdGenerator
-{
-    Guid Create();
-}
+        public IServiceProvider CreateProvider()
+        {
+            return Provider;
+        }
 
-class IdGenerator : IIdGenerator
-{
-    public Guid Create()
-    {
-        //... 
-        return Guid.NewGuid();
+        public void Dispose()
+        {
+            // disposing provider....
+        }
     }
-}
 
-public class Settings
-{
-    public bool IsProduction => true;
-    //...
+    // IServiceScopeFactory => IServiceScope
 }
 
 
