@@ -4,11 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace NinjaAspNetCore
 {
@@ -25,6 +20,18 @@ namespace NinjaAspNetCore
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            // var @default =  Configuration["LoggingAmoo:LogLevelAmoo:Default"];
+            // var isActive =  bool.Parse(Configuration["LoggingAmoo:LogLevelAmoo:IsActive"]);
+
+            // var logSection  = Configuration.GetSection("LoggingAmoo:LogLevelAmoo"); //TODO: how has GetSection implemented?
+            // var microsoft =  logSection["Microsoft"];
+
+            services.Configure<LoggingAmoo>(options => Configuration.GetSection("LoggingAmoo").Bind(options));
+            services.Configure<LoggingAmoo>(options =>
+            {
+                options.LogLevelAmoo.MicrosoftHostingLifetime = Configuration["LoggingAmoo:LogLevelAmoo:Microsoft.Hosting.Lifetime"];
+            });
+
 
             services.AddControllers();
         }
@@ -46,5 +53,20 @@ namespace NinjaAspNetCore
                 endpoints.MapControllers();
             });
         }
+    }
+
+    public class LoggingAmoo
+    {
+            public LogLevel LogLevelAmoo { get; set; }
+    }
+
+    public class LogLevel
+    {
+        public string Default { get; set; }
+        public bool IsActive { get; set; }
+        public string Microsoft { get; set; }
+        
+        [BindProperty(Name = "Microsoft.Hosting.Lifetime")]
+        public string MicrosoftHostingLifetime { get; set; }
     }
 }
