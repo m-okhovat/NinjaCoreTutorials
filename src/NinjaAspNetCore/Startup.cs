@@ -1,9 +1,12 @@
+using System.Collections.Generic;
+using System.Runtime.InteropServices.ComTypes;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 
 namespace NinjaAspNetCore
 {
@@ -33,12 +36,25 @@ namespace NinjaAspNetCore
             });
 
 
+            // Second way for registering configuration:
+            //1) step 1
+            var loggingAmoo = new LoggingAmoo();
+            Configuration.GetSection("LoggingAmoo").Bind(loggingAmoo);
+
+            //2) step 2:
+            services.AddSingleton(loggingAmoo);
+
+
             services.AddControllers();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+
+            // DOTNET_Environment
+            // ASPDOTNET_Environment
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -68,5 +84,10 @@ namespace NinjaAspNetCore
         
         [BindProperty(Name = "Microsoft.Hosting.Lifetime")]
         public string MicrosoftHostingLifetime { get; set; }
+    }
+
+    public class FakeSettings
+    {
+        public string  S { get; set; }
     }
 }
