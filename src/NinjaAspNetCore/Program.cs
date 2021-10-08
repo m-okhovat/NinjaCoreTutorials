@@ -1,8 +1,6 @@
-using System.IO;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+using System.IO;
 
 namespace NinjaAspNetCore
 {
@@ -12,7 +10,6 @@ namespace NinjaAspNetCore
         {
             var builder = CreateHostBuilder(args);
             builder.UseContentRoot(Directory.GetCurrentDirectory());
-
             builder.Build().Run();
         }
 
@@ -21,4 +18,8 @@ namespace NinjaAspNetCore
                 .CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder => { webBuilder.UseStartup<Startup>(); });
     }
+
+   
+
+
 }
